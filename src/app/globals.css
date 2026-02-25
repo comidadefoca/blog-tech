@@ -1,26 +1,37 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+
+  --color-tribune-bg: #0E0E0E;
+  --color-tribune-card: #151515;
+  --color-tribune-accent: #2563EB;
+  /* Royal Blue */
+  --color-tribune-text: #E5E7EB;
+  --color-tribune-muted: #9CA3AF;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-tribune-bg text-tribune-text antialiased selection:bg-tribune-accent selection:text-white;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .mesh-gradient-footer {
+    background-color: #0E0E0E;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(250, 100%, 30%, 0.4) 0, transparent 60%),
+      radial-gradient(at 100% 100%, hsla(200, 100%, 40%, 0.4) 0, transparent 60%),
+      radial-gradient(at 50% 50%, hsla(300, 100%, 20%, 0.3) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(180, 100%, 30%, 0.3) 0, transparent 50%);
+  }
+
+  .mesh-gradient-cta {
+    background-color: #2563EB;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(200, 100%, 70%, 0.4) 0, transparent 70%),
+      radial-gradient(at 100% 100%, hsla(220, 100%, 80%, 0.3) 0, transparent 60%);
+  }
 }
