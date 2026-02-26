@@ -1,0 +1,37 @@
+name: The Hunter (Auto-Generator)
+
+on:
+  schedule:
+    # Run at 08:00 and 16:00 UTC (05:00 and 13:00 BRT)
+    - cron: '0 8,16 * * *'
+  workflow_dispatch: # Allows manual triggering from the GitHub UI
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './automations/package-lock.json'
+          
+      - name: Install dependencies
+        working-directory: ./automations
+        run: npm ci
+        
+      - name: Run AI Generator
+        working-directory: ./automations
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
+          GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+          GOOGLE_SHEET_ID: '1miOPksi05T5WmpT22Iz365nwASirW4BXp2XbdHLHeWo'
+        run: npm start
