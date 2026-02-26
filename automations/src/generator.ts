@@ -36,6 +36,8 @@ export async function generateBlogPost(
 You are an expert writer for a blog focused entirely on Artificial Intelligence and Technology.
 Your mission is to take trending content and transform it into a completely new, highly engaging, well-structured blog post that fits our editorial voice.
 
+LANGUAGE: Write EVERYTHING in English. Titles, excerpts, content — all in English. No Portuguese.
+
 Do NOT just summarize. Expand on the topic, add insights, provide examples, and explore implications.
 
 ${customSystemPrompt ? `EDITOR'S VOICE & TONE INSTRUCTIONS:\n${customSystemPrompt}\n` : ''}

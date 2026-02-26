@@ -79,6 +79,9 @@ async function runPublisher() {
                 }
             }
 
+            // Extract category from the sheet
+            const category = row.get('Categoria') || '';
+
             // Insert into Supabase
             const { data, error } = await supabase
                 .from('posts')
@@ -89,7 +92,8 @@ async function runPublisher() {
                         excerpt: excerpt,
                         content: content,
                         image_url: imageUrl,
-                        tags: tags, // Might need to be formatted as an array depending on DB schema
+                        category: category,
+                        tags: tags,
                         published_at: new Date().toISOString()
                     }
                 ]);

@@ -88,7 +88,7 @@ export default async function BlogPostPage({
             <section className="px-6 w-full max-w-4xl mx-auto">
                 <FadeIn delay={300} direction="up">
                     <article className="w-full max-w-none">
-                        <div className="prose prose-lg prose-invert max-w-none text-zinc-400 prose-headings:font-serif prose-headings:text-white prose-a:text-tribune-accent prose-a:no-underline hover:prose-a:underline prose-strong:text-zinc-200 prose-code:text-blue-300 prose-blockquote:border-tribune-accent prose-blockquote:text-zinc-300 prose-li:text-zinc-400">
+                        <div className="prose prose-lg md:prose-xl lg:prose-2xl prose-invert max-w-none text-zinc-300 leading-relaxed md:leading-[1.8] tracking-wide prose-headings:font-serif prose-headings:text-white prose-h2:mt-16 prose-h2:mb-8 prose-h3:mt-12 prose-h3:mb-6 prose-a:text-tribune-accent prose-a:no-underline hover:prose-a:underline prose-strong:text-zinc-100 prose-strong:font-bold prose-code:text-blue-300 prose-blockquote:border-tribune-accent prose-blockquote:text-zinc-200 prose-blockquote:bg-tribune-accent/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:italic  prose-li:text-zinc-300 prose-li:my-2 prose-p:mb-8">
                             <ReactMarkdown>{markdownContent}</ReactMarkdown>
                         </div>
 
