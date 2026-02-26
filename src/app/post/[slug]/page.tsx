@@ -6,12 +6,14 @@ import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
 import { cookies } from "next/headers";
+import { t, type Lang } from "@/lib/i18n";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('pt-BR', {
+function formatDate(dateStr: string, lang: Lang) {
+    const locale = lang === 'pt' ? 'pt-BR' : 'en-US';
+    return new Date(dateStr).toLocaleDateString(locale, {
         month: 'long', day: 'numeric', year: 'numeric'
     });
 }
@@ -24,7 +26,8 @@ export default async function BlogPostPage({
     const { slug } = await params;
 
     const cookieStore = await cookies();
-    const lang = (cookieStore.get("NEXT_LOCALE")?.value || "en") as "en" | "pt";
+    const lang = (cookieStore.get("NEXT_LOCALE")?.value || "en") as Lang;
+    const dict = t(lang);
 
     if (!slug) {
         notFound();
@@ -65,7 +68,7 @@ export default async function BlogPostPage({
                             {!post.category && tags[0] && (
                                 <span className="bg-zinc-800 px-3 py-1.5 rounded text-zinc-300">{tags[0]}</span>
                             )}
-                            <span className="text-zinc-500">{formatDate(post.published_at)}</span>
+                            <span className="text-zinc-500">{formatDate(post.published_at, lang)}</span>
                             <ViewCounter postId={post.id} initialViews={post.views || 0} />
                         </div>
 
@@ -104,7 +107,7 @@ export default async function BlogPostPage({
                         {/* Tags */}
                         {tags.length > 0 && (
                             <div className="flex flex-wrap gap-3 mt-12 pt-8 border-t border-zinc-800">
-                                <span className="text-xs uppercase tracking-widest text-zinc-500 font-bold flex items-center mr-2">Tags</span>
+                                <span className="text-xs uppercase tracking-widest text-zinc-500 font-bold flex items-center mr-2">{dict.tags}</span>
                                 {tags.map((tag) => (
                                     <span key={tag} className="bg-zinc-900 px-3 py-1.5 rounded-lg text-sm text-zinc-300 cursor-pointer hover:bg-zinc-800 transition-colors">
                                         {tag}
@@ -119,7 +122,7 @@ export default async function BlogPostPage({
             {/* 3. Back to Home */}
             <section className="px-6 w-full max-w-4xl mx-auto mt-16">
                 <Link href="/" className="inline-flex items-center gap-2 text-tribune-accent hover:underline font-semibold">
-                    ← Voltar para todos os posts
+                    {dict.backToHome}
                 </Link>
             </section>
 

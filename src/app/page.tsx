@@ -3,12 +3,14 @@ import Link from "next/link";
 import FadeIn from "@/components/FadeIn";
 import { getPosts, getMostViewed } from "@/lib/supabase";
 import { cookies } from "next/headers";
+import { t, type Lang } from "@/lib/i18n";
 
 // Force dynamic rendering so posts are always fresh
 export const dynamic = 'force-dynamic';
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+function formatDate(dateStr: string, lang: Lang) {
+  const locale = lang === 'pt' ? 'pt-BR' : 'en-US';
+  return new Date(dateStr).toLocaleDateString(locale, {
     month: 'short', day: 'numeric', year: 'numeric'
   });
 }
@@ -20,7 +22,8 @@ function getFirstTag(tags: string): string {
 
 export default async function Home() {
   const cookieStore = await cookies();
-  const lang = (cookieStore.get("NEXT_LOCALE")?.value || "en") as "en" | "pt";
+  const lang = (cookieStore.get("NEXT_LOCALE")?.value || "en") as Lang;
+  const dict = t(lang);
 
   const [posts, mostViewed] = await Promise.all([
     getPosts(),
@@ -58,7 +61,7 @@ export default async function Home() {
                 <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full max-w-2xl text-tribune-text">
                   <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider mb-4">
                     <span className="bg-zinc-800/80 backdrop-blur-sm px-2.5 py-1 rounded text-white">{getFirstTag(heroPosts[0].tags)}</span>
-                    <span className="text-zinc-400">{formatDate(heroPosts[0].published_at)}</span>
+                    <span className="text-zinc-400">{formatDate(heroPosts[0].published_at, lang)}</span>
                   </div>
                   <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.15] text-white">
                     {heroPosts[0].title_pt && lang === 'pt' ? heroPosts[0].title_pt : heroPosts[0].title}
@@ -86,7 +89,7 @@ export default async function Home() {
                   <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
                     <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider mb-3">
                       <span className="bg-zinc-800/80 backdrop-blur-sm px-2.5 py-1 rounded text-white">{getFirstTag(post.tags)}</span>
-                      <span className="text-zinc-400">{formatDate(post.published_at)}</span>
+                      <span className="text-zinc-400">{formatDate(post.published_at, lang)}</span>
                     </div>
                     <h2 className="text-xl md:text-2xl font-bold tracking-tight leading-snug text-white">
                       {post.title_pt && lang === 'pt' ? post.title_pt : post.title}
@@ -120,7 +123,7 @@ export default async function Home() {
                   </div>
                   <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider mb-3">
                     <span className="bg-[#1A1A1A] px-2.5 py-1 rounded text-zinc-300">{getFirstTag(post.tags)}</span>
-                    <span className="text-zinc-500">{formatDate(post.published_at)}</span>
+                    <span className="text-zinc-500">{formatDate(post.published_at, lang)}</span>
                   </div>
                   <h3 className="text-2xl font-bold tracking-tight text-white group-hover:text-tribune-accent transition-colors leading-snug">
                     {post.title_pt && lang === 'pt' ? post.title_pt : post.title}
@@ -136,7 +139,7 @@ export default async function Home() {
       {mostViewed.length > 0 && (
         <section className="px-6 w-full max-w-7xl mx-auto">
           <FadeIn delay={400} direction="up">
-            <h2 className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-8">Mais Lidos</h2>
+            <h2 className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-8">{dict.mostRead}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               {mostViewed.map((post, index) => (
                 <Link key={post.id} href={`/post/${post.slug}`} className="group flex flex-col gap-3">
@@ -170,8 +173,8 @@ export default async function Home() {
       {/* Empty State */}
       {posts.length === 0 && (
         <section className="px-6 w-full max-w-7xl mx-auto text-center py-20">
-          <h2 className="text-3xl font-bold text-white mb-4">Nenhum post ainda</h2>
-          <p className="text-zinc-400 text-lg">O conteúdo está sendo gerado. Volte em breve!</p>
+          <h2 className="text-3xl font-bold text-white mb-4">{dict.noPosts}</h2>
+          <p className="text-zinc-400 text-lg">{dict.noPostsText}</p>
         </section>
       )}
 

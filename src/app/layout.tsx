@@ -50,16 +50,15 @@ export default async function RootLayout({
                 <span className="font-serif text-3xl font-bold tracking-tight text-white">Lumen<span className="text-tribune-accent">.</span>AI</span>
               </a>
               <div className="flex items-center gap-4 text-sm text-zinc-500">
-                <span>Clareza no que importa</span>
+                <span>{lang === 'pt' ? 'Clareza no que importa' : 'Clarity where it matters'}</span>
               </div>
             </div>
 
             {/* Footer Links */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-4 text-sm font-medium text-tribune-text">
-              <Link href="/contact" className="hover:text-white transition-colors">Contato</Link>
-              <Link href="/privacy" className="hover:text-white transition-colors">Privacidade</Link>
-              <a href="#" className="hover:text-white transition-colors">LinkedIn</a>
-              <a href="#" className="hover:text-white transition-colors">Twitter / X</a>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-12 gap-y-4 text-sm font-medium text-tribune-text">
+              <Link href="/archive" className="hover:text-white transition-colors">{lang === 'pt' ? 'Arquivo' : 'Archive'}</Link>
+              <Link href="/contact" className="hover:text-white transition-colors">{lang === 'pt' ? 'Contato' : 'Contact'}</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">{lang === 'pt' ? 'Privacidade' : 'Privacy'}</Link>
             </div>
           </div>
         </footer>

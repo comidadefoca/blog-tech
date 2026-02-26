@@ -111,3 +111,24 @@ export async function searchPosts(query: string): Promise<Post[]> {
 
     return data || [];
 }
+
+/**
+ * Fetches posts with pagination for the Archive page.
+ */
+export async function getPaginatedPosts(page: number = 1, perPage: number = 12): Promise<{ posts: Post[], total: number }> {
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+
+    const { data, error, count } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact' })
+        .order('published_at', { ascending: false })
+        .range(from, to);
+
+    if (error) {
+        console.error('Error fetching paginated posts:', error.message);
+        return { posts: [], total: 0 };
+    }
+
+    return { posts: data || [], total: count || 0 };
+}
