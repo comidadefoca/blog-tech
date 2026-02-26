@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import FadeIn from "@/components/FadeIn";
-import SubscribeForm from "@/components/SubscribeForm";
-import { getPosts } from "@/lib/supabase";
+import { getPosts, getMostViewed } from "@/lib/supabase";
 
 // Force dynamic rendering so posts are always fresh
 export const dynamic = 'force-dynamic';
@@ -19,7 +18,10 @@ function getFirstTag(tags: string): string {
 }
 
 export default async function Home() {
-  const posts = await getPosts();
+  const [posts, mostViewed] = await Promise.all([
+    getPosts(),
+    getMostViewed(5),
+  ]);
 
   // Split posts into hero (first 3) and grid (rest)
   const heroPosts = posts.slice(0, 3);
@@ -126,38 +128,48 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Empty State */}
-      {posts.length === 0 && (
-        <section className="px-6 w-full max-w-7xl mx-auto text-center py-20">
-          <h2 className="text-3xl font-bold text-white mb-4">No posts yet</h2>
-          <p className="text-zinc-400 text-lg">Content is being generated. Check back soon!</p>
+      {/* 3. Most Read Section */}
+      {mostViewed.length > 0 && (
+        <section className="px-6 w-full max-w-7xl mx-auto">
+          <FadeIn delay={400} direction="up">
+            <h2 className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-8">Mais Lidos</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+              {mostViewed.map((post, index) => (
+                <Link key={post.id} href={`/post/${post.slug}`} className="group flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl font-serif font-bold text-zinc-800 group-hover:text-tribune-accent transition-colors">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div className="flex flex-col gap-1">
+                      {post.category && (
+                        <span className="text-[10px] text-tribune-accent font-semibold uppercase tracking-wider">{post.category}</span>
+                      )}
+                      <h4 className="text-sm font-bold text-white leading-snug group-hover:text-tribune-accent transition-colors line-clamp-2">
+                        {post.title}
+                      </h4>
+                      <span className="flex items-center gap-1 text-xs text-zinc-600">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {(post.views || 0).toLocaleString('pt-BR')}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </FadeIn>
         </section>
       )}
 
-      {/* 3. CTA Banner */}
-      <section className="px-6 w-full max-w-7xl mx-auto mb-10">
-        <FadeIn delay={200} direction="up">
-          <div className="w-full relative rounded-2xl overflow-hidden h-[360px] md:h-[400px] flex items-center justify-center">
-            <Image
-              src="https://images.unsplash.com/photo-1633630650912-3023c72bdf35?q=80&w=2070&auto=format&fit=crop"
-              alt="Liquid Marble"
-              fill
-              className="object-cover opacity-60 mix-blend-color-dodge saturate-200"
-            />
-
-            <div className="relative z-10 w-[90%] md:w-[600px] bg-tribune-accent p-10 md:p-14 rounded-2xl text-center shadow-2xl backdrop-blur-md">
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                Assine <span className="font-serif italic font-normal">a</span> Lumen AI
-              </h2>
-              <p className="text-blue-100 mb-8 max-w-md mx-auto">
-                Clareza no que importa. Receba as melhores análises de IA no seu email.
-              </p>
-
-              <SubscribeForm />
-            </div>
-          </div>
-        </FadeIn>
-      </section>
+      {/* Empty State */}
+      {posts.length === 0 && (
+        <section className="px-6 w-full max-w-7xl mx-auto text-center py-20">
+          <h2 className="text-3xl font-bold text-white mb-4">Nenhum post ainda</h2>
+          <p className="text-zinc-400 text-lg">O conteúdo está sendo gerado. Volte em breve!</p>
+        </section>
+      )}
 
     </div>
   );

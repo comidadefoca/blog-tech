@@ -1,11 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { searchPosts, Post } from "@/lib/supabase";
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<Post[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    // Debounced search
+    const doSearch = useCallback(async (query: string) => {
+        if (query.trim().length < 2) {
+            setSearchResults([]);
+            return;
+        }
+        setIsSearching(true);
+        const results = await searchPosts(query);
+        setSearchResults(results);
+        setIsSearching(false);
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => doSearch(searchQuery), 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery, doSearch]);
+
+    // Close search when pressing Escape
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setIsSearchOpen(false);
+                setSearchQuery("");
+                setSearchResults([]);
+            }
+        };
+        window.addEventListener("keydown", handleEsc);
+        return () => window.removeEventListener("keydown", handleEsc);
+    }, []);
 
     return (
         <>
@@ -17,14 +51,15 @@ export default function Navbar() {
                         onClick={() => {
                             setIsMenuOpen(!isMenuOpen);
                             setIsSearchOpen(false);
+                            setSearchQuery("");
                         }}
                         className="flex items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity"
                         aria-label="Toggle menu"
                     >
                         <div className="flex flex-col gap-[5px] w-5">
-                            <span className={`w-full h-[1.5px] bg-white transition-all ${isMenuOpen ? "rotate-45 translate-y-[6.5px]" : ""}`}></span>
-                            <span className={`h-[1.5px] bg-white transition-all ${isMenuOpen ? "opacity-0" : "w-[80%]"}`}></span>
-                            <span className={`w-full h-[1.5px] bg-white transition-all ${isMenuOpen ? "-rotate-45 -translate-y-[6.5px]" : ""}`}></span>
+                            <span className={`w-full h-[1.5px] bg-white transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-[6.5px]" : ""}`}></span>
+                            <span className={`h-[1.5px] bg-white transition-all duration-300 ${isMenuOpen ? "opacity-0" : "w-[80%]"}`}></span>
+                            <span className={`w-full h-[1.5px] bg-white transition-all duration-300 ${isMenuOpen ? "-rotate-45 -translate-y-[6.5px]" : ""}`}></span>
                         </div>
                         <span className="text-xs uppercase tracking-widest font-semibold ml-2 text-white">
                             {isMenuOpen ? "Fechar" : "Menu"}
@@ -34,7 +69,7 @@ export default function Navbar() {
                     {/* Logo */}
                     <Link href="/" className="absolute left-1/2 transform -translate-x-1/2">
                         <span className="font-serif text-4xl font-bold tracking-tight text-white hover:text-gray-200 transition-colors">
-                            Lumen<span className="text-tribune-accent font-normal">.AI</span>
+                            Lumen<span className="text-tribune-accent">.</span>AI
                         </span>
                     </Link>
 
@@ -43,6 +78,10 @@ export default function Navbar() {
                         onClick={() => {
                             setIsSearchOpen(!isSearchOpen);
                             setIsMenuOpen(false);
+                            if (isSearchOpen) {
+                                setSearchQuery("");
+                                setSearchResults([]);
+                            }
                         }}
                         className="flex items-center gap-2 cursor-pointer hover:text-tribune-accent transition-colors text-white"
                         aria-label="Toggle search"
@@ -72,15 +111,64 @@ export default function Navbar() {
                         <input
                             type="text"
                             placeholder="Buscar artigos..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-transparent border-b-2 border-zinc-700 text-3xl md:text-5xl text-white outline-none py-4 placeholder-zinc-600 focus:border-tribune-accent transition-colors"
                             autoFocus
                         />
-                        <div className="mt-8 flex flex-wrap gap-3">
-                            <span className="text-sm text-zinc-500 mr-2">Populares:</span>
-                            <button className="text-sm px-3 py-1 rounded-full border border-zinc-700 text-zinc-300 hover:bg-zinc-800">Notícias IA</button>
-                            <button className="text-sm px-3 py-1 rounded-full border border-zinc-700 text-zinc-300 hover:bg-zinc-800">Ferramentas</button>
-                            <button className="text-sm px-3 py-1 rounded-full border border-zinc-700 text-zinc-300 hover:bg-zinc-800">Tutoriais</button>
-                        </div>
+
+                        {/* Search Results */}
+                        {isSearching && (
+                            <p className="text-zinc-500 mt-6 text-sm animate-pulse">Buscando...</p>
+                        )}
+
+                        {!isSearching && searchResults.length > 0 && (
+                            <div className="mt-8 flex flex-col gap-4">
+                                <span className="text-xs text-zinc-500 uppercase tracking-widest font-bold">
+                                    {searchResults.length} resultado{searchResults.length > 1 ? 's' : ''}
+                                </span>
+                                {searchResults.map((post) => (
+                                    <Link
+                                        key={post.id}
+                                        href={`/post/${post.slug}`}
+                                        onClick={() => { setIsSearchOpen(false); setSearchQuery(""); setSearchResults([]); }}
+                                        className="group flex items-center gap-4 py-3 border-b border-zinc-800 hover:border-tribune-accent transition-colors"
+                                    >
+                                        <div className="flex flex-col gap-1">
+                                            {post.category && (
+                                                <span className="text-xs text-tribune-accent font-semibold uppercase">{post.category}</span>
+                                            )}
+                                            <h4 className="text-lg font-bold text-white group-hover:text-tribune-accent transition-colors">
+                                                {post.title}
+                                            </h4>
+                                            {post.excerpt && (
+                                                <p className="text-sm text-zinc-500 line-clamp-1">{post.excerpt}</p>
+                                            )}
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+
+                        {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
+                            <p className="text-zinc-500 mt-8 text-lg">Nenhum resultado encontrado para &quot;{searchQuery}&quot;</p>
+                        )}
+
+                        {/* Category Quick Filters */}
+                        {searchQuery.length < 2 && (
+                            <div className="mt-8 flex flex-wrap gap-3">
+                                <span className="text-sm text-zinc-500 mr-2">Categorias:</span>
+                                {["Notícias IA", "Ferramentas", "Tutoriais", "Opinião"].map((cat) => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setSearchQuery(cat)}
+                                        className="text-sm px-3 py-1 rounded-full border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:border-tribune-accent transition-all"
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -92,11 +180,11 @@ export default function Navbar() {
                         <div>
                             <h3 className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-6">Categorias</h3>
                             <div className="flex flex-col gap-4 text-2xl font-serif text-white">
-                                <Link href="#" className="hover:text-tribune-accent transition-colors">Notícias IA</Link>
-                                <Link href="#" className="hover:text-tribune-accent transition-colors">Ferramentas IA</Link>
-                                <Link href="#" className="hover:text-tribune-accent transition-colors">Tutoriais</Link>
-                                <Link href="#" className="hover:text-tribune-accent transition-colors">Tendências</Link>
-                                <Link href="#" className="hover:text-tribune-accent transition-colors">Opinião</Link>
+                                <Link href="#" onClick={() => setIsMenuOpen(false)} className="hover:text-tribune-accent transition-colors">Notícias IA</Link>
+                                <Link href="#" onClick={() => setIsMenuOpen(false)} className="hover:text-tribune-accent transition-colors">Ferramentas IA</Link>
+                                <Link href="#" onClick={() => setIsMenuOpen(false)} className="hover:text-tribune-accent transition-colors">Tutoriais</Link>
+                                <Link href="#" onClick={() => setIsMenuOpen(false)} className="hover:text-tribune-accent transition-colors">Tendências</Link>
+                                <Link href="#" onClick={() => setIsMenuOpen(false)} className="hover:text-tribune-accent transition-colors">Opinião</Link>
                             </div>
                         </div>
                         <div>
@@ -104,7 +192,7 @@ export default function Navbar() {
                             <p className="text-zinc-400 text-sm leading-relaxed mb-6">
                                 Lumen AI é o blog que transforma temas complexos de Inteligência Artificial em conhecimento claro e acessível. Profundidade sem intimidar. Clareza sem trivializar.
                             </p>
-                            <Link href="/contact" className="text-sm font-bold text-white border-b border-white hover:text-tribune-accent hover:border-tribune-accent transition-colors pb-1">
+                            <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-sm font-bold text-white border-b border-white hover:text-tribune-accent hover:border-tribune-accent transition-colors pb-1">
                                 Saiba mais sobre nós
                             </Link>
                         </div>

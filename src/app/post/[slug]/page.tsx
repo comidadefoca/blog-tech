@@ -1,16 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import FadeIn from "@/components/FadeIn";
+import ViewCounter from "@/components/ViewCounter";
 import { notFound } from "next/navigation";
-import { getPostBySlug, getPosts } from "@/lib/supabase";
+import { getPostBySlug } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric'
+    return new Date(dateStr).toLocaleDateString('pt-BR', {
+        month: 'long', day: 'numeric', year: 'numeric'
     });
 }
 
@@ -49,8 +50,14 @@ export default async function BlogPostPage({
                 <FadeIn delay={100} direction="up">
                     <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-10 mt-6">
                         <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider mb-6">
-                            {tags[0] && <span className="bg-zinc-800 px-3 py-1.5 rounded text-zinc-300">{tags[0]}</span>}
+                            {post.category && (
+                                <span className="bg-tribune-accent/20 text-tribune-accent px-3 py-1.5 rounded">{post.category}</span>
+                            )}
+                            {!post.category && tags[0] && (
+                                <span className="bg-zinc-800 px-3 py-1.5 rounded text-zinc-300">{tags[0]}</span>
+                            )}
                             <span className="text-zinc-500">{formatDate(post.published_at)}</span>
+                            <ViewCounter postId={post.id} initialViews={post.views || 0} />
                         </div>
 
                         <h1 className="font-serif text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
@@ -87,7 +94,7 @@ export default async function BlogPostPage({
 
                         {/* Tags */}
                         {tags.length > 0 && (
-                            <div className="flex gap-3 mt-12 pt-8 border-t border-zinc-800">
+                            <div className="flex flex-wrap gap-3 mt-12 pt-8 border-t border-zinc-800">
                                 <span className="text-xs uppercase tracking-widest text-zinc-500 font-bold flex items-center mr-2">Tags</span>
                                 {tags.map((tag) => (
                                     <span key={tag} className="bg-zinc-900 px-3 py-1.5 rounded-lg text-sm text-zinc-300 cursor-pointer hover:bg-zinc-800 transition-colors">

@@ -42,7 +42,7 @@ export default function RootLayout({
             {/* Logo & Info */}
             <div className="flex flex-col md:flex-row items-center gap-6">
               <a href="/">
-                <span className="font-serif text-3xl font-bold tracking-tight text-white">Lumen<span className="text-tribune-accent font-normal">.AI</span></span>
+                <span className="font-serif text-3xl font-bold tracking-tight text-white">Lumen<span className="text-tribune-accent">.</span>AI</span>
               </a>
               <div className="flex items-center gap-4 text-sm text-zinc-500">
                 <span>Clareza no que importa</span>
