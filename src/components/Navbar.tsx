@@ -1,15 +1,27 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { searchPosts, Post } from "@/lib/supabase";
+import { setLanguage } from "@/actions/language";
 
-export default function Navbar() {
+export default function Navbar({ lang }: { lang: "en" | "pt" }) {
+    const router = useRouter();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Post[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [isPending, startTransition] = useTransition();
+
+    const toggleLang = () => {
+        const next = lang === "en" ? "pt" : "en";
+        startTransition(async () => {
+            await setLanguage(next);
+            router.refresh();
+        });
+    };
 
     // Debounced search
     const doSearch = useCallback(async (query: string) => {
@@ -73,33 +85,27 @@ export default function Navbar() {
                         </span>
                     </Link>
 
-                    {/* Search Toggle */}
+                    {/* Search Trigger */}
                     <button
                         onClick={() => {
                             setIsSearchOpen(!isSearchOpen);
                             setIsMenuOpen(false);
-                            if (isSearchOpen) {
-                                setSearchQuery("");
-                                setSearchResults([]);
-                            }
+                            setTimeout(() => document.getElementById('search-input')?.focus(), 100);
                         }}
-                        className="flex items-center gap-2 cursor-pointer hover:text-tribune-accent transition-colors text-white"
-                        aria-label="Toggle search"
+                        className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer"
+                        aria-label="Search articles"
                     >
-                        <span className="text-xs uppercase tracking-widest font-semibold mr-2 hidden md:block">
-                            {isSearchOpen ? "Fechar" : "Buscar"}
-                        </span>
-                        {isSearchOpen ? (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        ) : (
-                            <svg className="w-5 h-5" stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                        )}
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <span>Busca</span>
+                    </button>
+
+                    {/* Language Toggle */}
+                    <button
+                        onClick={toggleLang}
+                        disabled={isPending}
+                        className="font-bold px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition disabled:opacity-50"
+                    >
+                        {lang === "en" ? "🇺🇸 EN" : "🇧🇷 PT"}
                     </button>
                 </div>
             </nav>
@@ -136,11 +142,11 @@ export default function Navbar() {
                                     >
                                         <div className="flex flex-col gap-1">
                                             {post.category && (
-                                                <span className="text-xs text-tribune-accent font-semibold uppercase">{post.category}</span>
+                                                <span className="text-xs uppercase tracking-widest text-tribune-accent font-bold">{(post.category || 'Tech')}</span>
                                             )}
-                                            <h4 className="text-lg font-bold text-white group-hover:text-tribune-accent transition-colors">
-                                                {post.title}
-                                            </h4>
+                                            <span className="text-white text-lg font-bold group-hover/result:underline leading-tight">
+                                                {post.title_pt && lang === 'pt' ? post.title_pt : post.title}
+                                            </span>
                                             {post.excerpt && (
                                                 <p className="text-sm text-zinc-500 line-clamp-1">{post.excerpt}</p>
                                             )}

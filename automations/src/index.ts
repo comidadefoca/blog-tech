@@ -132,12 +132,18 @@ async function main() {
     // Convert to rich string for sheets (just markdown)
     const content = `---
 title: "${post.title}"
+title_pt: "${post.title_pt}"
 slug: "${post.slug}"
 excerpt: "${post.excerpt}"
+excerpt_pt: "${post.excerpt_pt}"
 keywords: [${post.seoKeywords.join(', ')}]
 ---
 
-${post.contentMarkdown}`;
+${post.contentMarkdown}
+
+=== PT ===
+
+${post.contentMarkdown_pt}`;
 
     await saveDraft(post.title, content.trim(), post.relevanceScore, imageUrl, post.category);
 

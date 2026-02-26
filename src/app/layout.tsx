@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/react";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,17 +21,20 @@ export const metadata: Metadata = {
   description: "Blog de Inteligência Artificial e Tecnologia. Temas complexos explicados com clareza, profundidade e estética premium.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get("NEXT_LOCALE")?.value || "en") as "en" | "pt";
+
   return (
-    <html lang="pt-BR" className="scroll-smooth">
+    <html lang={lang} className="scroll-smooth">
       <body className={`${inter.variable} ${playfair.variable} font-sans antialiased min-h-screen flex flex-col bg-tribune-bg text-tribune-text relative overflow-x-hidden`}>
 
         {/* Interactive Navigation Bar */}
-        <Navbar />
+        <Navbar lang={lang} />
 
         {/* Main Content */}
         <main className="flex-grow pt-8 pb-16">

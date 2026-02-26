@@ -56,22 +56,37 @@ async function runPublisher() {
             const rawContent = row.get('Conteúdo') || '';
             const imageUrl = row.get('Imagem') || '';
 
-            // Extract Slug, Excerpt, and Keywords from the markdown frontmatter
+            // Extract bilingual fields and keywords from the markdown frontmatter
             let slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
             let excerpt = '';
             let content = rawContent;
             let tags = '';
 
+            let title_pt = '';
+            let excerpt_pt = '';
+            let content_pt = '';
+
             const match = rawContent.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
             if (match) {
                 const frontmatter = match[1];
-                content = match[2].trim();
+                const fullContent = match[2].trim();
+
+                // Split content on the PT separator
+                const parts = fullContent.split('\n=== PT ===\n');
+                content = parts[0].trim();
+                content_pt = parts[1] ? parts[1].trim() : '';
 
                 const slugMatch = frontmatter.match(/slug:\s*"(.*?)"/);
                 if (slugMatch) slug = slugMatch[1];
 
                 const excerptMatch = frontmatter.match(/excerpt:\s*"(.*?)"/);
                 if (excerptMatch) excerpt = excerptMatch[1];
+
+                const titlePtMatch = frontmatter.match(/title_pt:\s*"(.*?)"/);
+                if (titlePtMatch) title_pt = titlePtMatch[1];
+
+                const excerptPtMatch = frontmatter.match(/excerpt_pt:\s*"(.*?)"/);
+                if (excerptPtMatch) excerpt_pt = excerptPtMatch[1];
 
                 const keysMatch = frontmatter.match(/keywords:\s*\[(.*?)\]/);
                 if (keysMatch) {
@@ -88,9 +103,12 @@ async function runPublisher() {
                 .insert([
                     {
                         title: title,
+                        title_pt: title_pt || title, // fallback to avoid empty
                         slug: slug,
                         excerpt: excerpt,
+                        excerpt_pt: excerpt_pt || excerpt,
                         content: content,
+                        content_pt: content_pt || content,
                         image_url: imageUrl,
                         category: category,
                         tags: tags,

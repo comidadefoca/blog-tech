@@ -11,9 +11,12 @@ const openai = new OpenAI({
 
 export interface GeneratedPost {
     title: string;
+    title_pt: string;
     slug: string;
     excerpt: string;
+    excerpt_pt: string;
     contentMarkdown: string;
+    contentMarkdown_pt: string;
     seoKeywords: string[];
     imageType: 'people' | 'abstract';
     imagePrompt: string;
@@ -33,10 +36,10 @@ export async function generateBlogPost(
         : 'Notícias IA, Ferramentas IA, Tutoriais, Tendências, Opinião';
 
     const systemPrompt = `
-You are an expert writer for a blog focused entirely on Artificial Intelligence and Technology.
+You are an expert writer for a bilingual blog focused entirely on Artificial Intelligence and Technology.
 Your mission is to take trending content and transform it into a completely new, highly engaging, well-structured blog post that fits our editorial voice.
 
-LANGUAGE: Write EVERYTHING in English. Titles, excerpts, content — all in English. No Portuguese.
+LANGUAGE: Write EVERYTHING in English first. Then, provide a high-quality, native-sounding Portuguese (PT-BR) translation for the title, excerpt, and main content. Return BOTH languages in the JSON.
 
 Do NOT just summarize. Expand on the topic, add insights, provide examples, and explore implications.
 
@@ -58,14 +61,17 @@ Score the topic from 1 to 10 based on these criteria. Be critical — most topic
 FORMATTING REQUIREMENTS:
 Return ONLY a strictly valid JSON object, without any markdown formatting wrappers (like \`\`\`json). The JSON object must have this exact structure:
 {
-  "title": "A catchy, SEO-friendly title (max 60 chars)",
+  "title": "A catchy, SEO-friendly title in English (max 60 chars)",
+  "title_pt": "A catchy, SEO-friendly title in Portuguese (max 60 chars)",
   "slug": "url-friendly-slug-with-dashes",
-  "excerpt": "A short, engaging paragraph summarizing the post (max 160 chars)",
-  "contentMarkdown": "The full blog post content formatted with rich Markdown (H2, H3, bold, lists, code blocks if necessary). Must be at least 600 words.",
+  "excerpt": "A short, engaging paragraph summarizing the post in English (max 160 chars)",
+  "excerpt_pt": "A short, engaging paragraph summarizing the post in Portuguese (max 160 chars)",
+  "contentMarkdown": "The full blog post content in English formatted with rich Markdown (H2, H3, bold, lists). Must be at least 600 words.",
+  "contentMarkdown_pt": "The full blog post content translated to Portuguese formatted with rich Markdown. Must match the English version's depth and structure.",
   "seoKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
   "category": "One of the blog categories listed above that best fits this article",
   "imageType": "Must be exactly 'people' if the main subject involves humans, or 'abstract' if the subject is concepts, tech, code or objects.",
-  "imagePrompt": "A very brief, abstract semantic description of the post's core topic to be used as a 3D shape concept (e.g., 'a broken server rack', 'an interconnected web of nodes', 'a glowing shield'). No style instructions, just the object.",
+  "imagePrompt": "A very brief, abstract semantic description of the post's core topic to be used as a 3D shape concept",
   "relevanceScore": 6
 }
   `;

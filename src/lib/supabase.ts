@@ -8,9 +8,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export interface Post {
     id: string;
     title: string;
+    title_pt?: string;
     slug: string;
     excerpt: string;
+    excerpt_pt?: string;
     content: string;
+    content_pt?: string;
     image_url: string;
     category: string;
     tags: string;

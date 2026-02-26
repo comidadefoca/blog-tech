@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FadeIn from "@/components/FadeIn";
 import { getPosts, getMostViewed } from "@/lib/supabase";
+import { cookies } from "next/headers";
 
 // Force dynamic rendering so posts are always fresh
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,9 @@ function getFirstTag(tags: string): string {
 }
 
 export default async function Home() {
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get("NEXT_LOCALE")?.value || "en") as "en" | "pt";
+
   const [posts, mostViewed] = await Promise.all([
     getPosts(),
     getMostViewed(5),
@@ -57,7 +61,7 @@ export default async function Home() {
                     <span className="text-zinc-400">{formatDate(heroPosts[0].published_at)}</span>
                   </div>
                   <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.15] text-white">
-                    {heroPosts[0].title}
+                    {heroPosts[0].title_pt && lang === 'pt' ? heroPosts[0].title_pt : heroPosts[0].title}
                   </h1>
                 </div>
               </Link>
@@ -85,7 +89,7 @@ export default async function Home() {
                       <span className="text-zinc-400">{formatDate(post.published_at)}</span>
                     </div>
                     <h2 className="text-xl md:text-2xl font-bold tracking-tight leading-snug text-white">
-                      {post.title}
+                      {post.title_pt && lang === 'pt' ? post.title_pt : post.title}
                     </h2>
                   </div>
                 </Link>
@@ -119,7 +123,7 @@ export default async function Home() {
                     <span className="text-zinc-500">{formatDate(post.published_at)}</span>
                   </div>
                   <h3 className="text-2xl font-bold tracking-tight text-white group-hover:text-tribune-accent transition-colors leading-snug">
-                    {post.title}
+                    {post.title_pt && lang === 'pt' ? post.title_pt : post.title}
                   </h3>
                 </Link>
               ))}
@@ -145,7 +149,7 @@ export default async function Home() {
                         <span className="text-[10px] text-tribune-accent font-semibold uppercase tracking-wider">{post.category}</span>
                       )}
                       <h4 className="text-sm font-bold text-white leading-snug group-hover:text-tribune-accent transition-colors line-clamp-2">
-                        {post.title}
+                        {post.title_pt && lang === 'pt' ? post.title_pt : post.title}
                       </h4>
                       <span className="flex items-center gap-1 text-xs text-zinc-600">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">

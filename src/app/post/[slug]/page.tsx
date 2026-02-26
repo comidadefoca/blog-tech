@@ -5,6 +5,7 @@ import ViewCounter from "@/components/ViewCounter";
 import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
+import { cookies } from "next/headers";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -22,6 +23,9 @@ export default async function BlogPostPage({
 }) {
     const { slug } = await params;
 
+    const cookieStore = await cookies();
+    const lang = (cookieStore.get("NEXT_LOCALE")?.value || "en") as "en" | "pt";
+
     if (!slug) {
         notFound();
     }
@@ -35,8 +39,13 @@ export default async function BlogPostPage({
     // Parse tags
     const tags = post.tags ? post.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
 
+    // Select correct language content
+    const displayTitle = post.title_pt && lang === 'pt' ? post.title_pt : post.title;
+    const displayExcerpt = post.excerpt_pt && lang === 'pt' ? post.excerpt_pt : post.excerpt;
+    const rawContent = (post.content_pt && lang === 'pt') ? post.content_pt : (post.content || '');
+
     // Extract the actual markdown content (strip frontmatter if present)
-    let markdownContent = post.content || '';
+    let markdownContent = rawContent;
     const fmMatch = markdownContent.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
     if (fmMatch) {
         markdownContent = fmMatch[1].trim();
@@ -61,11 +70,11 @@ export default async function BlogPostPage({
                         </div>
 
                         <h1 className="font-serif text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
-                            {post.title}
+                            {displayTitle}
                         </h1>
-                        {post.excerpt && (
+                        {displayExcerpt && (
                             <p className="text-xl md:text-2xl text-zinc-400 font-medium">
-                                {post.excerpt}
+                                {displayExcerpt}
                             </p>
                         )}
                     </div>
