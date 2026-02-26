@@ -13,73 +13,101 @@ export interface ViralContent {
 
 const parser = new Parser();
 
-export async function fetchFromReddit(subreddit: string, limit: number = 5): Promise<ViralContent[]> {
+/**
+ * Curated subreddits that are highly relevant to AI, technology, and innovation.
+ * These communities consistently produce high-quality, viral content within our niche.
+ * The user controls the "flavor" of topics through the System Prompt and Categories,
+ * NOT through this list. This list ensures raw material is always on-brand.
+ */
+const AI_FOCUSED_SUBREDDITS = [
+    'artificial',        // General AI discussions
+    'MachineLearning',   // Technical ML research & papers
+    'ChatGPT',           // ChatGPT use cases and news
+    'LocalLLaMA',        // Open-source AI models
+    'singularity',       // Future of AI & humanity
+    'StableDiffusion',   // AI image generation
+    'OpenAI',            // OpenAI announcements
+    'technology',        // Broad tech news (filtered by AI later)
+    'programming',       // Developer culture & tools
+    'webdev',            // Web development trends
+];
+
+/**
+ * Curated RSS feeds from reputable AI and tech news sources.
+ */
+const AI_FOCUSED_RSS = [
+    'https://hnrss.org/newest?q=AI+OR+LLM+OR+GPT+OR+machine+learning',  // Hacker News filtered for AI
+    'https://techcrunch.com/category/artificial-intelligence/feed/',       // TechCrunch AI category
+];
+
+export async function fetchFromSubreddit(subreddit: string, limit: number = 3): Promise<ViralContent[]> {
     try {
-        console.log(`Fetching top posts from r/${subreddit}...`);
-        // Using the search API or top API. Let's use top.json for viral content
-        const response = await axios.get(`https://www.reddit.com/r/${subreddit}/top.json?limit=${limit}&t=week`);
+        console.log(`  📡 r/${subreddit}...`);
+        const response = await axios.get(
+            `https://www.reddit.com/r/${subreddit}/top.json?limit=${limit}&t=week`,
+            { timeout: 8000 }
+        );
 
         const posts = response.data.data.children;
-        const viralPosts: ViralContent[] = posts.map((post: any) => ({
+        return posts.map((post: any) => ({
             title: post.data.title,
             url: `https://www.reddit.com${post.data.permalink}`,
-            source: `Reddit (r/${subreddit})`,
-            content: post.data.selftext || '', // text content if it's a text post
+            source: `r/${subreddit}`,
+            content: post.data.selftext?.substring(0, 500) || '',
             score: post.data.score,
             author: post.data.author,
         }));
-
-        return viralPosts;
-    } catch (error) {
-        console.error(`Error fetching from Reddit r/${subreddit}:`, error);
+    } catch (error: any) {
+        // Silently skip failed subreddits (404, rate limits, etc.)
         return [];
     }
 }
 
-export async function fetchFromRSS(feedUrl: string, limit: number = 5): Promise<ViralContent[]> {
+export async function fetchFromRSS(feedUrl: string, limit: number = 3): Promise<ViralContent[]> {
     try {
-        console.log(`Fetching RSS feed: ${feedUrl}...`);
         const feed = await parser.parseURL(feedUrl);
-
-        const items = feed.items.slice(0, limit);
-        const viralPosts: ViralContent[] = items.map((item) => ({
+        return feed.items.slice(0, limit).map((item) => ({
             title: item.title || 'Untitled',
             url: item.link || '',
-            source: feed.title || feedUrl,
-            content: item.contentSnippet || item.content || '',
+            source: feed.title || 'RSS',
+            content: item.contentSnippet?.substring(0, 500) || item.content?.substring(0, 500) || '',
             publishedDate: item.pubDate,
             author: item.creator,
         }));
-
-        return viralPosts;
     } catch (error) {
-        console.error(`Error fetching RSS ${feedUrl}:`, error);
         return [];
     }
 }
 
-export async function gatherViralContent(dynamicNiches: string[]): Promise<ViralContent[]> {
-    // We treat dynamic niches as subreddits for now (sanitize spaces)
-    const subreddits = dynamicNiches.length > 0
-        ? dynamicNiches.map(n => n.replace(/\s+/g, '').toLowerCase())
-        : ['webdev', 'nextjs', 'reactjs', 'programming'];
-    const rssFeeds = [
-        'https://css-tricks.com/feed/',
-        'https://hnrss.org/frontpage' // Hacker News top
-    ];
+/**
+ * Gathers viral content from all curated AI-focused sources.
+ * The `categories` parameter from the Dashboard is used for logging only;
+ * the actual content filtering is done by the AI System Prompt during generation.
+ * 
+ * This design ensures maximum variety in raw topics while keeping them
+ * within the broad AI/Tech umbrella.
+ */
+export async function gatherViralContent(categories: string[]): Promise<ViralContent[]> {
+    console.log(`\nScouting viral AI content across ${AI_FOCUSED_SUBREDDITS.length} subreddits and ${AI_FOCUSED_RSS.length} RSS feeds...`);
+    console.log(`Blog categories to fill: ${categories.join(' | ')}\n`);
 
     let allContent: ViralContent[] = [];
 
-    for (const sub of subreddits) {
-        const posts = await fetchFromReddit(sub, 2); // Get top 2 of the week
+    // Fetch from curated subreddits (2 posts each to keep it fast)
+    for (const sub of AI_FOCUSED_SUBREDDITS) {
+        const posts = await fetchFromSubreddit(sub, 2);
         allContent.push(...posts);
     }
 
-    for (const feed of rssFeeds) {
-        const posts = await fetchFromRSS(feed, 2);
+    // Fetch from curated RSS feeds
+    for (const feed of AI_FOCUSED_RSS) {
+        const posts = await fetchFromRSS(feed, 3);
         allContent.push(...posts);
     }
 
-    // Sort by score if available (Reddit), or just return
-    return allContent.sort((a, b) => (b.score || 0) - (a.score || 0));
+    // Sort by engagement score (most viral first)
+    allContent = allContent.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+    console.log(`\n✅ Found ${allContent.length} on-niche topics across all sources.`);
+    return allContent;
 }

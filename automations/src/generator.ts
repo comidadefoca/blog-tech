@@ -16,23 +16,42 @@ export interface GeneratedPost {
     contentMarkdown: string;
     seoKeywords: string[];
     imageType: 'people' | 'abstract';
-    imagePrompt: string; // New field for DALL-E prompt
-    relevanceScore: number; // SEO Value 1-10
+    imagePrompt: string;
+    relevanceScore: number;
+    category: string; // Which blog category this post belongs to
 }
 
 export async function generateBlogPost(
     sourceContent: ViralContent,
-    customSystemPrompt: string = ''
+    customSystemPrompt: string = '',
+    categories: string[] = []
 ): Promise<GeneratedPost | null> {
     console.log(`Generating blog post for: "${sourceContent.title}"...`);
 
+    const categoriesList = categories.length > 0
+        ? categories.join(', ')
+        : 'Notícias IA, Ferramentas IA, Tutoriais, Tendências, Opinião';
+
     const systemPrompt = `
-You are an expert technical writer and SEO specialist. Your goal is to take viral or trending content and write a completely new, highly engaging, and well-structured blog post based on the topic.
-Do NOT just summarize the content. Expand on it, add value, provide examples if applicable, and write in a clear, professional yet accessible tone.
+You are an expert writer for a blog focused entirely on Artificial Intelligence and Technology.
+Your mission is to take trending content and transform it into a completely new, highly engaging, well-structured blog post that fits our editorial voice.
 
-${customSystemPrompt ? `ADDITIONAL INSTRUCTIONS FROM EDITOR:\n${customSystemPrompt}\n` : ''}
+Do NOT just summarize. Expand on the topic, add insights, provide examples, and explore implications.
 
-The target audience is developers, designers, and tech enthusiasts.
+${customSystemPrompt ? `EDITOR'S VOICE & TONE INSTRUCTIONS:\n${customSystemPrompt}\n` : ''}
+
+BLOG CATEGORIES (you MUST classify into exactly one):
+${categoriesList}
+
+The target audience is curious professionals who want to understand AI's impact on their lives, careers, and businesses.
+
+SEO RELEVANCE SCORING RULES (you MUST be strict and honest):
+Score the topic from 1 to 10 based on these criteria. Be critical — most topics should score between 4-7. Only truly exceptional topics deserve 8+.
+- 1-3: Niche humor, memes, personal stories, or topics with near-zero search volume. Example: "My cat broke my GPU".
+- 4-5: Interesting but narrow topics, or topics already heavily covered by competitors. Example: "Another ChatGPT wrapper app launched".  
+- 6-7: Solid trending topics with proven engagement and moderate search volume. Example: "Google releases new open-source AI model".
+- 8-9: High-impact breaking news, major announcements, or topics at the intersection of AI + business/money. Example: "OpenAI announces GPT-5 with reasoning capabilities".
+- 10: Once-in-a-year paradigm shifts. Example: "AGI achieved" or "EU bans all AI models".
 
 FORMATTING REQUIREMENTS:
 Return ONLY a strictly valid JSON object, without any markdown formatting wrappers (like \`\`\`json). The JSON object must have this exact structure:
@@ -40,11 +59,12 @@ Return ONLY a strictly valid JSON object, without any markdown formatting wrappe
   "title": "A catchy, SEO-friendly title (max 60 chars)",
   "slug": "url-friendly-slug-with-dashes",
   "excerpt": "A short, engaging paragraph summarizing the post (max 160 chars)",
-  "contentMarkdown": "The full blog post content formatted with rich Markdown (H2, H3, bold, lists, code blocks if necessary). Must be at least 500 words.",
-  "seoKeywords": ["keyword1", "keyword2", "keyword3"],
+  "contentMarkdown": "The full blog post content formatted with rich Markdown (H2, H3, bold, lists, code blocks if necessary). Must be at least 600 words.",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
+  "category": "One of the blog categories listed above that best fits this article",
   "imageType": "Must be exactly 'people' if the main subject involves humans, or 'abstract' if the subject is concepts, tech, code or objects.",
   "imagePrompt": "A very brief, abstract semantic description of the post's core topic to be used as a 3D shape concept (e.g., 'a broken server rack', 'an interconnected web of nodes', 'a glowing shield'). No style instructions, just the object.",
-  "relevanceScore": 8 // An integer from 1 to 10 estimating how valuable and viral this topic will be for our tech SEO strategy.
+  "relevanceScore": 6
 }
   `;
 

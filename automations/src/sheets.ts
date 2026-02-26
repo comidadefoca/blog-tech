@@ -27,7 +27,7 @@ export const getDoc = async (): Promise<GoogleSpreadsheet> => {
 };
 
 export interface SheetConfig {
-    niches: string[];
+    categories: string[];
     systemPrompt: string;
     imageStylePrompt: string;
 }
@@ -43,11 +43,11 @@ export const getConfigs = async (): Promise<SheetConfig> => {
         sheet = await doc.addSheet({ title: 'Dashboard' });
         await sheet.loadCells('A1:B10');
 
-        sheet.getCellByA1('A1').value = 'Buscas (Nichos Separados por Vírgula)';
-        sheet.getCellByA1('B1').value = 'Tech, AI, Startups, Web Development';
+        sheet.getCellByA1('A1').value = 'Categorias do Blog (separadas por vírgula)';
+        sheet.getCellByA1('B1').value = 'Notícias IA, Ferramentas IA, Tutoriais, Tendências, Opinião';
 
         sheet.getCellByA1('A2').value = 'Prompt Sistema (Instruções ChatGPT)';
-        sheet.getCellByA1('B2').value = 'Você é um especialista em tecnologia e escreve de forma cativante.';
+        sheet.getCellByA1('B2').value = 'Você é um escritor sênior de um blog sobre Inteligência Artificial. Escreva de forma cativante, acessível e otimizada para SEO. O tom deve ser informativo mas envolvente, como se estivesse explicando para um amigo curioso.';
 
         sheet.getCellByA1('A3').value = 'Prompt Style (Instruções DALL-E 3)';
         sheet.getCellByA1('B3').value = 'Minimal single 3D object, translucent blue glass material, dark background with soft vignette.';
@@ -57,34 +57,51 @@ export const getConfigs = async (): Promise<SheetConfig> => {
         await sheet.loadCells('A1:B10');
     }
 
-    // We expect the user to set up rows:
-    // A1: "Buscas (Nichos)", B1: "AI, Startups, Web Dev"
-    // A2: "Prompt Sistema", B2: "Você é um especialista..."
-    // A3: "Prompt Imagens", B3: "Minimal 3D object..."
-
-    const nichesCell = sheet.getCellByA1('B1').value?.toString() || 'Tech, AI, Development';
+    const categoriesCell = sheet.getCellByA1('B1').value?.toString() || 'Notícias IA, Ferramentas IA, Tutoriais';
     const systemPromptCell = sheet.getCellByA1('B2').value?.toString() || '';
     const imagePromptCell = sheet.getCellByA1('B3').value?.toString() || '';
 
     return {
-        niches: nichesCell.split(',').map(n => n.trim()),
+        categories: categoriesCell.split(',').map(n => n.trim()),
         systemPrompt: systemPromptCell,
         imageStylePrompt: imagePromptCell
     };
+};
+
+/**
+ * Returns all existing article titles from the Rascunhos sheet.
+ * Used for duplicate detection before generating new content.
+ */
+export const getExistingTitles = async (): Promise<string[]> => {
+    const doc = await getDoc();
+    const draftSheet = doc.sheetsByTitle['Rascunhos'];
+    if (!draftSheet) return [];
+
+    try {
+        await draftSheet.loadHeaderRow();
+    } catch {
+        return [];
+    }
+
+    const rows = await draftSheet.getRows();
+    return rows
+        .map(row => row.get('Título do Artigo')?.toString() || '')
+        .filter(t => t.length > 0);
 };
 
 export const saveDraft = async (
     title: string,
     contentMarkdown: string,
     score: number,
-    imageUrl: string
+    imageUrl: string,
+    category: string = ''
 ) => {
     const doc = await getDoc();
 
     let draftSheet = doc.sheetsByTitle['Rascunhos'];
 
     // We strictly define our headers
-    const requiredHeaders = ['Assunto', 'Título do Artigo', 'Data', 'Conteúdo', 'Imagem', 'Score SEO', 'Aprovado', 'Publicado'];
+    const requiredHeaders = ['Assunto', 'Título do Artigo', 'Categoria', 'Data', 'Conteúdo', 'Imagem', 'Score SEO', 'Aprovado', 'Publicado'];
 
     if (!draftSheet) {
         draftSheet = await doc.addSheet({
@@ -109,6 +126,7 @@ export const saveDraft = async (
     const newRow = await draftSheet.addRow({
         'Assunto': title.substring(0, 30) + '...',
         'Título do Artigo': title,
+        'Categoria': category,
         'Data': today,
         'Conteúdo': contentMarkdown,
         'Imagem': imageUrl,
