@@ -103,7 +103,7 @@ export default async function BlogPostPage({
             {/* 3. Back to Home */}
             <section className="px-6 w-full max-w-4xl mx-auto mt-16">
                 <Link href="/" className="inline-flex items-center gap-2 text-tribune-accent hover:underline font-semibold">
-                    ← Back to all posts
+                    ← Voltar para todos os posts
                 </Link>
             </section>
 

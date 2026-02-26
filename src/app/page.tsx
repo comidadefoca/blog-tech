@@ -147,10 +147,10 @@ export default async function Home() {
 
             <div className="relative z-10 w-[90%] md:w-[600px] bg-tribune-accent p-10 md:p-14 rounded-2xl text-center shadow-2xl backdrop-blur-md">
               <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                Subscribe <span className="font-serif italic font-normal">to</span> Tribune
+                Assine <span className="font-serif italic font-normal">a</span> Lumen AI
               </h2>
               <p className="text-blue-100 mb-8 max-w-md mx-auto">
-                Sign up to our newsletters and we&apos;ll keep you in the loop.
+                Clareza no que importa. Receba as melhores análises de IA no seu email.
               </p>
 
               <SubscribeForm />

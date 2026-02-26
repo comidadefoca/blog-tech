@@ -8,7 +8,7 @@ export default function SubscribeForm() {
         >
             <input
                 type="email"
-                placeholder="Email Address..."
+                placeholder="Seu melhor email..."
                 className="flex-grow px-5 py-3.5 rounded-xl bg-blue-500/30 border border-blue-400/30 text-white placeholder-blue-200 outline-none focus:ring-2 focus:ring-white transition-all"
                 required
             />
@@ -16,7 +16,7 @@ export default function SubscribeForm() {
                 type="submit"
                 className="bg-white text-tribune-accent font-bold px-6 py-3.5 rounded-xl hover:bg-zinc-100 hover:-translate-y-1 transition-all duration-300 whitespace-nowrap"
             >
-                Subscribe
+                Assinar
             </button>
         </form>
     );
