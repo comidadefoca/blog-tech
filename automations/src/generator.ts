@@ -17,14 +17,20 @@ export interface GeneratedPost {
     seoKeywords: string[];
     imageType: 'people' | 'abstract';
     imagePrompt: string; // New field for DALL-E prompt
+    relevanceScore: number; // SEO Value 1-10
 }
 
-export async function generateBlogPost(sourceContent: ViralContent): Promise<GeneratedPost | null> {
+export async function generateBlogPost(
+    sourceContent: ViralContent,
+    customSystemPrompt: string = ''
+): Promise<GeneratedPost | null> {
     console.log(`Generating blog post for: "${sourceContent.title}"...`);
 
     const systemPrompt = `
 You are an expert technical writer and SEO specialist. Your goal is to take viral or trending content and write a completely new, highly engaging, and well-structured blog post based on the topic.
 Do NOT just summarize the content. Expand on it, add value, provide examples if applicable, and write in a clear, professional yet accessible tone.
+
+${customSystemPrompt ? `ADDITIONAL INSTRUCTIONS FROM EDITOR:\n${customSystemPrompt}\n` : ''}
 
 The target audience is developers, designers, and tech enthusiasts.
 
@@ -37,7 +43,8 @@ Return ONLY a strictly valid JSON object, without any markdown formatting wrappe
   "contentMarkdown": "The full blog post content formatted with rich Markdown (H2, H3, bold, lists, code blocks if necessary). Must be at least 500 words.",
   "seoKeywords": ["keyword1", "keyword2", "keyword3"],
   "imageType": "Must be exactly 'people' if the main subject involves humans, or 'abstract' if the subject is concepts, tech, code or objects.",
-  "imagePrompt": "A descriptive prompt for an AI image generator focusing purely on the core subject/action, without specifying photography style or aesthetics, just the content itself."
+  "imagePrompt": "A very brief, abstract semantic description of the post's core topic to be used as a 3D shape concept (e.g., 'a broken server rack', 'an interconnected web of nodes', 'a glowing shield'). No style instructions, just the object.",
+  "relevanceScore": 8 // An integer from 1 to 10 estimating how valuable and viral this topic will be for our tech SEO strategy.
 }
   `;
 
@@ -83,15 +90,21 @@ Provide the final JSON output.
  * Generates an image using DALL-E 3 based on the topic prompt.
  * It enforces a specific visual style to avoid generic aesthetics.
  */
-export async function generateImage(basePrompt: string, imageType: 'people' | 'abstract'): Promise<Buffer | null> {
+export async function generateImage(
+    basePrompt: string,
+    imageType: 'people' | 'abstract',
+    customImageStyle: string = ''
+): Promise<Buffer | null> {
     console.log(`Generating image via DALL-E 3 (Type: ${imageType})...`);
 
-    // We can use a unified aesthetic for both or slightly tweak it
-    const stylePrefix = "A stylized, flat 2D vector illustration. Bold, geometric shapes, minimalist and modern corporate illustration style reminiscent of high-end editorial tech publications (like the Alegria style but more edgy/tech-focused). The color palette MUST be heavily constrained: primarily deep black, vibrant electric blue, with off-white or light grey backgrounds. Avoid any realistic lighting, 3D effects, shadows, or photographic elements. Keep it purely 2D graphic art. ";
+    const defaultStyle = `Minimal single 3D object, translucent blue glass material, 
+soft internal gradient blue to cyan, subtle glow edges, 
+smooth rounded geometry, centered composition, 
+dark background with soft vignette, studio lighting, clean negative space.`;
 
-    const styleSuffix = " No text, no fonts, no typography, and no letters visible in the image.";
+    const finalPrompt = `${customImageStyle || defaultStyle}
 
-    const finalPrompt = `${stylePrefix} The main subject is: ${basePrompt}. ${styleSuffix}`;
+Shape variation: ${basePrompt}`;
 
     try {
         const response = await openai.images.generate({

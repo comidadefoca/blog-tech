@@ -58,9 +58,11 @@ export async function fetchFromRSS(feedUrl: string, limit: number = 5): Promise<
     }
 }
 
-export async function gatherViralContent(): Promise<ViralContent[]> {
-    // Example sources - we will make this configurable
-    const subreddits = ['webdev', 'nextjs', 'reactjs', 'programming'];
+export async function gatherViralContent(dynamicNiches: string[]): Promise<ViralContent[]> {
+    // We treat dynamic niches as subreddits for now (sanitize spaces)
+    const subreddits = dynamicNiches.length > 0
+        ? dynamicNiches.map(n => n.replace(/\s+/g, '').toLowerCase())
+        : ['webdev', 'nextjs', 'reactjs', 'programming'];
     const rssFeeds = [
         'https://css-tricks.com/feed/',
         'https://hnrss.org/frontpage' // Hacker News top
