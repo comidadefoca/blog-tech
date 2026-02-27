@@ -2,14 +2,63 @@ import Image from "next/image";
 import Link from "next/link";
 import FadeIn from "@/components/FadeIn";
 import ViewCounter from "@/components/ViewCounter";
+import ShareButton from "@/components/ShareButton";
 import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
 import { cookies } from "next/headers";
 import { t, type Lang } from "@/lib/i18n";
+import type { Metadata } from "next";
 
-// Force dynamic rendering
-export const dynamic = 'force-dynamic';
+// ISR: revalidate every 60 seconds for fresh content + caching for SEO performance
+export const revalidate = 60;
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://aifrontiers.blog';
+
+/**
+ * Dynamic metadata per post — gives each article its own <title>, <meta description>,
+ * Open Graph tags, and Twitter Card for SEO and social sharing.
+ */
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+    const { slug } = await params;
+    const post = await getPostBySlug(slug);
+
+    if (!post) {
+        return { title: 'Post Not Found — Lumen AI' };
+    }
+
+    const title = `${post.title} — Lumen AI`;
+    const description = post.excerpt || post.title;
+    const url = `${SITE_URL}/post/${post.slug}`;
+    const imageUrl = post.image_url || `${SITE_URL}/og-default.png`;
+
+    return {
+        title,
+        description,
+        keywords: post.tags?.split(',').map((t: string) => t.trim()),
+        alternates: { canonical: url },
+        openGraph: {
+            type: 'article',
+            title: post.title,
+            description,
+            url,
+            siteName: 'Lumen AI',
+            images: [{ url: imageUrl, width: 1200, height: 630, alt: post.title }],
+            publishedTime: post.published_at,
+            tags: post.tags?.split(',').map((t: string) => t.trim()),
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: post.title,
+            description,
+            images: [imageUrl],
+        },
+    };
+}
 
 function formatDate(dateStr: string, lang: Lang) {
     const locale = lang === 'pt' ? 'pt-BR' : 'en-US';
@@ -54,8 +103,37 @@ export default async function BlogPostPage({
         markdownContent = fmMatch[1].trim();
     }
 
+    // JSON-LD structured data for Google rich snippets
+    const postUrl = `${SITE_URL}/post/${post.slug}`;
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: post.title,
+        description: post.excerpt || post.title,
+        image: post.image_url || undefined,
+        datePublished: post.published_at,
+        dateModified: post.published_at,
+        url: postUrl,
+        publisher: {
+            '@type': 'Organization',
+            name: 'Lumen AI',
+            url: SITE_URL,
+        },
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': postUrl,
+        },
+        keywords: post.tags || undefined,
+    };
+
     return (
         <div className="w-full flex flex-col pt-4 pb-16">
+
+            {/* JSON-LD Schema for Google Rich Snippets */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
 
             {/* 1. Article Header & Hero Image */}
             <section className="px-6 w-full max-w-7xl mx-auto mb-16">
@@ -104,17 +182,27 @@ export default async function BlogPostPage({
                             <ReactMarkdown>{markdownContent}</ReactMarkdown>
                         </div>
 
-                        {/* Tags */}
-                        {tags.length > 0 && (
-                            <div className="flex flex-wrap gap-3 mt-12 pt-8 border-t border-zinc-800">
-                                <span className="text-xs uppercase tracking-widest text-zinc-500 font-bold flex items-center mr-2">{dict.tags}</span>
-                                {tags.map((tag) => (
-                                    <span key={tag} className="bg-zinc-900 px-3 py-1.5 rounded-lg text-sm text-zinc-300 cursor-pointer hover:bg-zinc-800 transition-colors">
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
+                        {/* Share + Tags Section */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-12 pt-8 border-t border-zinc-800">
+                            {/* Tags */}
+                            {tags.length > 0 && (
+                                <div className="flex flex-wrap gap-3">
+                                    <span className="text-xs uppercase tracking-widest text-zinc-500 font-bold flex items-center mr-2">{dict.tags}</span>
+                                    {tags.map((tag) => (
+                                        <span key={tag} className="bg-zinc-900 px-3 py-1.5 rounded-lg text-sm text-zinc-300 cursor-pointer hover:bg-zinc-800 transition-colors">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Share Button */}
+                            <ShareButton
+                                title={displayTitle}
+                                url={postUrl}
+                                lang={lang}
+                            />
+                        </div>
                     </article>
                 </FadeIn>
             </section>

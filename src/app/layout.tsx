@@ -16,9 +16,40 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://aifrontiers.blog';
+
 export const metadata: Metadata = {
-  title: "Lumen AI — Clareza no que importa",
-  description: "Blog de Inteligência Artificial e Tecnologia. Temas complexos explicados com clareza, profundidade e estética premium.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'Lumen AI — Clareza no que importa',
+    template: '%s',
+  },
+  description: 'Blog de Inteligência Artificial e Tecnologia. Temas complexos explicados com clareza, profundidade e estética premium.',
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    alternateLocale: 'pt_BR',
+    siteName: 'Lumen AI',
+    title: 'Lumen AI — Clarity where it matters',
+    description: 'AI and Technology blog. Complex topics explained with clarity, depth, and premium aesthetics.',
+    url: SITE_URL,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lumen AI',
+    description: 'AI and Technology blog. Complex topics explained with clarity.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default async function RootLayout({

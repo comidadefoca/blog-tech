@@ -5,8 +5,8 @@ import { getPosts, getMostViewed } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { t, type Lang } from "@/lib/i18n";
 
-// Force dynamic rendering so posts are always fresh
-export const dynamic = 'force-dynamic';
+// ISR: revalidate every 60 seconds — fresh content + caching for SEO performance
+export const revalidate = 60;
 
 function formatDate(dateStr: string, lang: Lang) {
   const locale = lang === 'pt' ? 'pt-BR' : 'en-US';
