@@ -25,6 +25,21 @@ jobs:
         working-directory: ./automations
         run: npm ci
         
+      - name: Debug Environment Variables
+        env:
+          HAS_OPENAI: ${{ secrets.OPENAI_API_KEY != '' }}
+          HAS_SUPABASE_URL: ${{ secrets.SUPABASE_URL != '' }}
+          HAS_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
+          HAS_GOOGLE_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL != '' }}
+          HAS_GOOGLE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY != '' }}
+        run: |
+          echo "Checking if secrets are loaded correctly (true/false):"
+          echo "OPENAI_API_KEY is present: $HAS_OPENAI"
+          echo "SUPABASE_URL is present: $HAS_SUPABASE_URL"
+          echo "SUPABASE_SERVICE_ROLE_KEY is present: $HAS_SUPABASE_KEY"
+          echo "GOOGLE_SERVICE_ACCOUNT_EMAIL is present: $HAS_GOOGLE_EMAIL"
+          echo "GOOGLE_PRIVATE_KEY is present: $HAS_GOOGLE_KEY"
+          
       - name: Run AI Generator
         working-directory: ./automations
         env:
