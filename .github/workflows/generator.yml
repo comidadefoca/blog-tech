@@ -28,10 +28,17 @@ jobs:
       - name: Run AI Generator
         working-directory: ./automations
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Chaves do Supabase
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+          # Chaves da OpenAI
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+          # Chaves do Google Sheets
           GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
           GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
           GOOGLE_SHEET_ID: '1miOPksi05T5WmpT22Iz365nwASirW4BXp2XbdHLHeWo'
         run: npm start
+       
