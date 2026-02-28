@@ -28,10 +28,10 @@ export async function generateMetadata({
     const post = await getPostBySlug(slug);
 
     if (!post) {
-        return { title: 'Post Not Found — Lumen AI' };
+        return { title: 'Post Not Found — AI Frontiers' };
     }
 
-    const title = `${post.title} — Lumen AI`;
+    const title = `${post.title} — AI Frontiers`;
     const description = post.excerpt || post.title;
     const url = `${SITE_URL}/post/${post.slug}`;
     const imageUrl = post.image_url || `${SITE_URL}/og-default.png`;
@@ -46,7 +46,7 @@ export async function generateMetadata({
             title: post.title,
             description,
             url,
-            siteName: 'Lumen AI',
+            siteName: 'AI Frontiers',
             images: [{ url: imageUrl, width: 1200, height: 630, alt: post.title }],
             publishedTime: post.published_at,
             tags: post.tags?.split(',').map((t: string) => t.trim()),
@@ -116,7 +116,7 @@ export default async function BlogPostPage({
         url: postUrl,
         publisher: {
             '@type': 'Organization',
-            name: 'Lumen AI',
+            name: 'AI Frontiers',
             url: SITE_URL,
         },
         mainEntityOfPage: {

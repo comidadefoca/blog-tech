@@ -12,9 +12,23 @@ const getAuthToken = () => {
     const rawKey = process.env.GOOGLE_PRIVATE_KEY || '';
     // Handle newline escape characters if they are present in the env var
     const privateKey = rawKey.includes('\\n') ? rawKey.replace(/\\n/g, '\n') : rawKey;
+    const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+
+    if (!privateKey || !email) {
+        console.error(`
+❌ ERRO CRÍTICO: Credenciais do Google ausentes!
+Parece que o GitHub Actions não conseguiu ler os secrets 'GOOGLE_PRIVATE_KEY' ou 'GOOGLE_SERVICE_ACCOUNT_EMAIL'.
+
+Verifique o repositório no GitHub:
+1. Se os secrets foram adicionados em "Settings > Secrets and variables > Actions > Repository secrets".
+2. Se o nome dos secrets estão EXATAMENTE corretos.
+3. Se você não os adicionou acidentalmente na aba "Environment secrets" (ao invés de "Repository secrets").
+`);
+        process.exit(1);
+    }
 
     return new JWT({
-        email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        email: email,
         key: privateKey,
         scopes: SCOPES,
     });

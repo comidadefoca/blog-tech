@@ -5,8 +5,23 @@ import axios from 'axios';
 
 dotenv.config();
 
+const apiKey = process.env.OPENAI_API_KEY;
+
+if (!apiKey) {
+    console.error(`
+❌ ERRO CRÍTICO: Chave da OpenAI ausente!
+Parece que o GitHub Actions não conseguiu ler o secret 'OPENAI_API_KEY'.
+
+Verifique o repositório no GitHub:
+1. Se o secret foi adicionado em "Settings > Secrets and variables > Actions > Repository secrets".
+2. Se o nome do secret está EXATAMENTE correto.
+3. Se você não o adicionou acidentalmente na aba "Environment secrets" (ao invés de "Repository secrets").
+`);
+    process.exit(1);
+}
+
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: apiKey,
 });
 
 export interface GeneratedPost {

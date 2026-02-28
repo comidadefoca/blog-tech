@@ -22,7 +22,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://aifrontiers.blog';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Lumen AI — Clareza no que importa',
+    default: 'AI Frontiers — Clarity where it matters',
     template: '%s',
   },
   description: 'Blog de Inteligência Artificial e Tecnologia. Temas complexos explicados com clareza, profundidade e estética premium.',
@@ -30,14 +30,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     alternateLocale: 'pt_BR',
-    siteName: 'Lumen AI',
-    title: 'Lumen AI — Clarity where it matters',
+    siteName: 'AI Frontiers',
+    title: 'AI Frontiers — Clarity where it matters',
     description: 'AI and Technology blog. Complex topics explained with clarity, depth, and premium aesthetics.',
     url: SITE_URL,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lumen AI',
+    title: 'AI Frontiers',
     description: 'AI and Technology blog. Complex topics explained with clarity.',
   },
   robots: {
@@ -73,13 +73,13 @@ export default async function RootLayout({
           {children}
         </main>
 
-        {/* Lumen AI Footer */}
+        {/* AI Frontiers Footer */}
         <footer className="w-full border-t border-zinc-800 bg-tribune-bg pb-8 pt-12 px-6 mt-auto">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
             {/* Logo & Info */}
             <div className="flex flex-col md:flex-row items-center gap-6">
               <a href="/">
-                <span className="font-serif text-3xl font-bold tracking-tight text-white">Lumen<span className="text-tribune-accent">.</span>AI</span>
+                <span className="font-serif text-3xl font-bold tracking-tight text-white">AI<span className="text-tribune-accent"> </span>Frontiers</span>
               </a>
               <div className="flex items-center gap-4 text-sm text-zinc-500">
                 <span>{lang === 'pt' ? 'Clareza no que importa' : 'Clarity where it matters'}</span>

@@ -85,7 +85,7 @@ export default function Navbar({ lang }: { lang: Lang }) {
                     {/* Center: Logo */}
                     <Link href="/" className="absolute left-1/2 transform -translate-x-1/2">
                         <span className="font-serif text-4xl font-bold tracking-tight text-white hover:text-gray-200 transition-colors">
-                            Lumen<span className="text-tribune-accent">.</span>AI
+                            AI<span className="text-tribune-accent"> </span>Frontiers
                         </span>
                     </Link>
 
