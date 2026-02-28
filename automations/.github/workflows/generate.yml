@@ -22,7 +22,13 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-
+        
+      - name: Debug Variables
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then echo "ERRO: URL VAZIA NO COFRE"; else echo "SUCESSO: URL ENCONTRADA"; fi
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          
       - name: Run Generator Script
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
