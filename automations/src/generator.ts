@@ -109,6 +109,7 @@ Provide the final JSON output.
             ],
             temperature: 0.7,
             max_tokens: 2500,
+            response_format: { type: "json_object" }
         });
 
         const responseText = response.choices[0].message.content?.trim();
