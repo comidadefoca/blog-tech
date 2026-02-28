@@ -1,40 +1,44 @@
-name: Daily Content Generator
+name: The Hunter (Auto-Generator)
 
 on:
   schedule:
-    # Runs at 12:00 UTC (09:00 BRT) every day
-    - cron: '0 12 * * *'
-  workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
+    # Run at 08:00 and 16:00 UTC (05:00 and 13:00 BRT)
+    - cron: '0 8,16 * * *'
+  workflow_dispatch: # Allows manual triggering from the GitHub UI
 
 jobs:
-  generate-content:
+  generate:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
-
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-
-      - name: Install Dependencies
+          cache-dependency-path: './automations/package-lock.json'
+          
+      - name: Install dependencies
+        working-directory: ./automations
         run: npm ci
         
-      - name: Debug Variables
-        run: |
-          if [ -z "$SUPABASE_URL" ]; then echo "ERRO: URL VAZIA NO COFRE"; else echo "SUCESSO: URL ENCONTRADA"; fi
+      - name: Run AI Generator
+        working-directory: ./automations
         env:
+          # Chaves do Supabase
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          
-      - name: Run Generator Script
-        env:
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+          # Chaves da OpenAI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+          # Chaves do Google Sheets
           GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
           GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npm run start
+          GOOGLE_SHEET_ID: '1miOPksi05T5WmpT22Iz365nwASirW4BXp2XbdHLHeWo'
+        run: npm start
+       
